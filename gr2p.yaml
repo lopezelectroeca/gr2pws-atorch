@@ -24,24 +24,24 @@ ota:
 
 wifi:
   networks:
-  - ssid: "Electroeca"
-    password: "lopez.electroeca@gmail.com"
-  - ssid: "Electroeca2"
-    password: "lopez.electroeca@gmail.com"
-  - ssid: "Electroeca3"
-    password: "lopez.electroeca@gmail.com"
-  - ssid: "Electroeca4"
-    password: "lopez.electroeca@gmail.com"
+  - ssid: ""
+    password: ""
+  - ssid: ""
+    password: ""
+  - ssid: ""
+    password: ""
+  - ssid: ""
+    password: ""
   manual_ip:
     # Set this to the IP of the ESP
-    static_ip: 192.168.1.89
+    static_ip: 192.168.1.xx
     # Set this to the IP address of the router. Often ends with .1
-    gateway: 192.168.1.1
+    gateway: 192.168.1.x
     # The subnet of the network. 255.255.255.0 works for most home networks.
     subnet: 255.255.255.0
   ap:
     ssid: "${devicename} Fallback Hotspot"
-    password: "Fjlm29111973"
+    password: ""
 
 
 captive_portal:
