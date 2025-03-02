@@ -1,0 +1,477 @@
+substitutions:
+  devicename: "gr2p"
+  upper_devicename: "grp2"
+
+esphome:
+  name: $devicename
+  friendly_name: $devicename
+
+bk72xx:
+  board: cb2s
+
+# Enable logging
+logger:
+  baud_rate: 0
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "REvqzr6yfCPom1w6mm6VfVAlDZL9N9yT1LEAjEQLI2E="
+
+ota:
+  - platform: esphome
+    password: ""
+
+wifi:
+  networks:
+  - ssid: "Electroeca"
+    password: "lopez.electroeca@gmail.com"
+  - ssid: "Electroeca2"
+    password: "lopez.electroeca@gmail.com"
+  - ssid: "Electroeca3"
+    password: "lopez.electroeca@gmail.com"
+  - ssid: "Electroeca4"
+    password: "lopez.electroeca@gmail.com"
+  manual_ip:
+    # Set this to the IP of the ESP
+    static_ip: 192.168.1.89
+    # Set this to the IP address of the router. Often ends with .1
+    gateway: 192.168.1.1
+    # The subnet of the network. 255.255.255.0 works for most home networks.
+    subnet: 255.255.255.0
+  ap:
+    ssid: "${devicename} Fallback Hotspot"
+    password: "Fjlm29111973"
+
+
+captive_portal:
+
+web_server:
+  port: 80
+
+mdns:
+  disabled: false
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+button:
+  - platform: restart
+    name: Restart
+
+debug:
+  update_interval: 30s
+
+text_sensor:
+  - platform: debug
+    reset_reason:
+      name: $devicename Reset Reason
+  - platform: libretiny
+    version:
+      name: $devicename LibreTiny Version
+  - platform: version
+    name: "${devicename} - Version"
+    icon: mdi:cube-outline
+  - platform: wifi_info
+    ip_address:
+      name: "${devicename} IP"
+    ssid:
+      name: "${devicename} Conectada a"
+  - platform: template
+    name: "${devicename} - Uptime human"
+    entity_category: diagnostic
+    lambda: |-
+      int seconds = (id(uptime_sensor).state);
+      int days = seconds / (24 * 3600);
+      seconds = seconds % (24 * 3600);
+      int hours = seconds / 3600;
+      seconds = seconds % 3600;
+      int minutes = seconds /  60;
+      seconds = seconds % 60;
+      if ( days > 3650 ) {
+        return { "Starting up" };
+      } else if ( days ) {
+        return { (String(days) +"d " + String(hours) +"h " + String(minutes) +"m "+ String(seconds) +"s").c_str() };
+      } else if ( hours ) {
+        return { (String(hours) +"h " + String(minutes) +"m "+ String(seconds) +"s").c_str() };
+      } else if ( minutes ) {
+        return { (String(minutes) +"m "+ String(seconds) +"s").c_str() };
+      } else {
+        return { (String(seconds) +"s").c_str() };
+      }
+    icon: mdi:clock-start
+
+
+sensor:
+  - platform: wifi_signal
+    name: "${devicename} - Wifi Signal"
+    id: wifi_signal_db
+    update_interval: 60s
+    icon: mdi:wifi
+  - platform: copy
+    source_id: wifi_signal_db
+    name: "${devicename} WiFi Signal Percent"
+    filters:
+      - lambda: return min(max(2 * (x + 100.0), 0.0), 100.0);
+    unit_of_measurement: "%"
+    entity_category: "diagnostic"
+    device_class: ""
+  - platform: uptime
+    name: "${devicename} - Uptime"
+    id: uptime_sensor
+    update_interval: 60s
+    icon: mdi:clock-outline
+
+  - platform: total_daily_energy
+    name: "${devicename} - Todays Usage"
+    power_id: power_wattage
+    filters:
+      # Multiplication factor from W to kW is 0.001
+      - multiply: 0.001
+    unit_of_measurement: kWh
+    icon: mdi:calendar-clock
+
+  - platform: tuya
+    sensor_datapoint: 18
+    name: $devicename Current
+    unit_of_measurement: A
+    device_class: current
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+      
+  - platform: tuya
+    id: power_wattage
+    sensor_datapoint: 19
+    name: $devicename Power
+    device_class: power
+    unit_of_measurement: W
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.01
+      
+  - platform: tuya
+    sensor_datapoint: 20
+    name: $devicename Voltage
+    device_class: voltage
+    unit_of_measurement: V
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.01
+      
+  - platform: tuya
+    sensor_datapoint: 102
+    name: $devicename Cost
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+      
+  - platform: tuya
+    sensor_datapoint: 103
+    name: $devicename Add'l Cost
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.01
+      
+  - platform: tuya
+    sensor_datapoint: 122
+    name: $devicename Electricity leakage
+    unit_of_measurement: kWh
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+      
+  - platform: tuya
+    sensor_datapoint: 123
+    name: $devicename Total Electricity
+    unit_of_measurement: kWh
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+      
+  - platform: tuya
+    sensor_datapoint: 133
+    name: $devicename Frequency
+    unit_of_measurement: Hz
+    device_class: frequency
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.01
+      
+  - platform: tuya
+    sensor_datapoint: 134
+    name: $devicename Power Factor
+    unit_of_measurement: "%"
+    accuracy_decimals: 2
+    device_class: power_factor
+    filters:
+      - multiply: 0.01
+      
+  - platform: tuya
+    sensor_datapoint: 135
+    name: $devicename CPU Temp
+    device_class: temperature
+    unit_of_measurement: "°C"
+    
+  - platform: tuya
+    sensor_datapoint: 140
+    name: $devicename Balance Energy
+    unit_of_measurement: kWh
+    device_class: energy
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.01
+
+
+uart:
+  rx_pin: RX1
+  tx_pin: TX1
+  baud_rate: 9600
+
+tuya:
+  time_id: homeassistant_time
+  # DPIDs processed from schema model: exvou0
+
+switch:
+  - platform: tuya
+    switch_datapoint: 1
+    name: $devicename Switch State
+    
+  - platform: tuya
+    switch_datapoint: 111
+    name: $devicename Key Beep
+    
+  - platform: tuya
+    switch_datapoint: 113
+    name: $devicename Data Reset
+    
+  - platform: tuya
+    switch_datapoint: 114
+    name: $devicename Wifi Reset
+    
+  - platform: tuya
+    switch_datapoint: 115
+    name: $devicename Factory Reset
+    
+  - platform: tuya
+    switch_datapoint: 116
+    name: $devicename Screen Rotation
+    
+  - platform: tuya
+    switch_datapoint: 120
+    name: $devicename Overrun Control
+    
+  - platform: tuya
+    switch_datapoint: 126
+    name: $devicename Real Time Data Refresh
+    
+  - platform: tuya
+    switch_datapoint: 139
+    name: $devicename Prepayment Switch
+    
+  - platform: tuya
+    switch_datapoint: 141
+    name: $devicename Clear Remaining Available Power
+
+number:
+  - platform: tuya
+    number_datapoint: 9
+    name: $devicename Countdown
+    unit_of_measurement: s
+    min_value: 0
+    max_value: 360000
+    step: 1
+    mode: box
+    
+  - platform: tuya
+    number_datapoint: 17
+    name: $devicename Add Electricity
+    unit_of_measurement: kwh
+    min_value: 0
+    max_value: 5000000
+    step: 1
+    
+  - platform: tuya
+    number_datapoint: 101
+    name: $devicename Price
+    min_value: 0
+    max_value: 99999
+    step: 1
+    mode: box
+    
+  - platform: tuya
+    number_datapoint: 104
+    name: $devicename Over Voltage Protection
+    unit_of_measurement: V
+    min_value: 1
+    max_value: 3200
+    step: 1
+    mode: box
+    
+  - platform: tuya
+    number_datapoint: 105
+    name: $devicename Over Current Protection
+    unit_of_measurement: A
+    min_value: 1
+    max_value: 1000
+    step: 1
+    mode: box
+    
+  - platform: tuya
+    number_datapoint: 106
+    name: $devicename Over Power Protection
+    unit_of_measurement: W
+    min_value: 1
+    max_value: 32000
+    step: 1
+    mode: box   
+    
+  - platform: tuya
+    number_datapoint: 108
+    name: $devicename Display Brightness
+    min_value: 1
+    max_value: 9
+    step: 1
+    
+  - platform: tuya
+    number_datapoint: 109
+    name: $devicename Standby Brightness
+    min_value: 0
+    max_value: 9
+    step: 1
+    
+  - platform: tuya
+    number_datapoint: 110
+    name: $devicename Standby Time
+    unit_of_measurement: s
+    min_value: 3
+    max_value: 99
+    step: 1
+    mode: box
+    
+  - platform: tuya
+    number_datapoint: 119
+    name: $devicename Low Voltage Protection
+    unit_of_measurement: V
+    min_value: 1
+    max_value: 3200
+    step: 1
+    mode: box
+    
+  - platform: tuya
+    name: $devicename (Unconfirmed) Olcp
+    number_datapoint: 121
+    unit_of_measurement: A
+    min_value: 10
+    max_value: 100
+    step: 1
+    
+  - platform: tuya
+    number_datapoint: 124
+    name: $devicename Leakage Current
+    unit_of_measurement: A
+    min_value: 0
+    max_value: 120000
+    step: 1
+    
+  - platform: tuya
+    number_datapoint: 125
+    name: $devicename Reporting Interval
+    unit_of_measurement: S
+    min_value: 1
+    max_value: 90
+    step: 1
+    mode: box
+    
+  - platform: tuya
+    number_datapoint: 137
+    name: $devicename (Unconfirmed) Over Time
+    unit_of_measurement: min
+    min_value: 0
+    max_value: 99
+    step: 1
+    
+  - platform: tuya
+    number_datapoint: 142
+    name: $devicename Energy Charge
+    unit_of_measurement: kWh
+    min_value: 0
+    max_value: 500000
+    step: 1
+    
+  - platform: tuya
+    number_datapoint: 143
+    name: $devicename Power electricity not enough alarm
+    unit_of_measurement: kWh
+    min_value: 10
+    max_value: 500
+    step: 1
+
+select:
+  - platform: tuya
+    enum_datapoint: 107
+    name: $devicename Device Language
+    optimistic: true
+    options:
+      0: Chinese
+      1: English
+      
+  - platform: tuya
+    enum_datapoint: 112
+    name: $devicename Switch Mode
+    optimistic: true
+    options:
+      0: Controlled
+      1: Normally_Open
+      
+  - platform: tuya
+    enum_datapoint: 117
+    name: $devicename Standby Screen
+    optimistic: true
+    options:
+      0: Original
+      1: Measurement
+      
+  - platform: tuya
+    enum_datapoint: 118
+    name: $devicename Device Interface
+    optimistic: true
+    options:
+      0: Front
+      1: Back
+      2: Display_Off
+      
+  - platform: tuya
+    enum_datapoint: 132
+    name: $devicename Warning Flag
+    optimistic: true
+    options:
+      0: "Off"
+      1: Ovp
+      2: Ocp
+      3: Opp
+      4: Lvp
+      5: Le
+      6: Olcp
+      
+  - platform: tuya
+    enum_datapoint: 136
+    name: $devicename Price Mode
+    optimistic: true
+    options:
+      0: Single_Rate
+      1: Stair
+      2: Peak_Valley_Stair
+      
+  - platform: tuya
+    enum_datapoint: 138
+    name: $devicename Device Power-Up Switch Status
+    optimistic: true
+    options:
+      0: Memory 
+
+
+    
