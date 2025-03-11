@@ -123,15 +123,6 @@ sensor:
     update_interval: 60s
     icon: mdi:clock-outline
 
-  - platform: total_daily_energy
-    name: "${devicename} - Todays Usage"
-    power_id: power_wattage
-    filters:
-      # Multiplication factor from W to kW is 0.001
-      - multiply: 0.001
-    unit_of_measurement: kWh
-    icon: mdi:calendar-clock
-
   - platform: tuya
     sensor_datapoint: 18
     name: $devicename Current
